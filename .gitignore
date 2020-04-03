@@ -1,0 +1,10 @@
+data/*
+log/*
+checkpoints/*
+*.tar
+.idea/*
+__pycache__/*
+pycocotools/*
+dataset/COCO/*
+dataset/VOC/*
+experiment/*

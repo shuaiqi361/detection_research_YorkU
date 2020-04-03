@@ -210,12 +210,14 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
         boxes = [b.to(config.device) for b in boxes]
         labels = [l.to(config.device) for l in labels]
 
-        # Forward prop.
-        predicted_priors, predicted_locs_init, predicted_scores, _ = model(images)  # (N, 8732, 4), (N, 8732, n_classes)
+        if config.model['arch'].upper() == 'VGG_SSD':
+            # Forward prop.
+            predicted_locs, predicted_scores = model(images)
 
-        # Loss
-        loss = criterion(predicted_priors, predicted_locs_init,
-                         predicted_scores, boxes, labels) / config.num_iter_flag  # scalar
+            # Loss
+            loss = criterion(predicted_locs, predicted_scores, boxes, labels)
+        else:
+            raise NotImplementedError
 
         # Backward prop.
         if i % config.num_iter_flag == 0 and i != 0:
@@ -242,7 +244,7 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
 
     config.tb_logger.add_scalar('training_loss', losses, epoch)
 
-    del predicted_priors, predicted_locs_init, predicted_scores, images, boxes, labels
+    del predicted_locs, predicted_scores, images, boxes, labels
 
 
 def evaluate(test_loader, model, epoch, config):
