@@ -7,4 +7,6 @@ __pycache__/*
 pycocotools/*
 dataset/COCO/*
 dataset/VOC/*
+dataset/__pycache__/*
+models/__pycache__/*
 experiment/*

@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import torchvision.transforms.functional as FT
 from metrics import find_jaccard_overlap
 
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
 
 def decimate(tensor, m):
@@ -289,7 +289,7 @@ def photometric_distort(image):
     return new_image
 
 
-def transform(image, boxes, labels, difficulties, split, resize=(512, 512)):
+def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512)):
     """
     Apply the transformations above.
 
@@ -337,7 +337,7 @@ def transform(image, boxes, labels, difficulties, split, resize=(512, 512)):
             new_image, new_boxes = flip(new_image, new_boxes)
 
     # Resize image to (300, 300) - this also converts absolute boundary coordinates to their fractional form
-    new_image, new_boxes = resize(new_image, new_boxes, dims=resize)
+    new_image, new_boxes = resize(new_image, new_boxes, dims=resize_dim)
 
     # Convert PIL image to Torch tensor
     new_image = FT.to_tensor(new_image)

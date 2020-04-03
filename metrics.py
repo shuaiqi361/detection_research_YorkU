@@ -3,10 +3,10 @@ import os
 import torch
 import random
 
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
 
-def calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties, label_map):
+def calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties, label_map, device='cuda:1'):
     """
     Calculate the Mean Average Precision (mAP) of detected objects.
 

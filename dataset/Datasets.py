@@ -51,7 +51,7 @@ class PascalVOCDataset(Dataset):
 
         # Apply transformations
         image, boxes, labels, difficulties = transform(image, boxes, labels, difficulties,
-                                                       split=self.split, resize=self.input_size)
+                                                       split=self.split, resize_dim=self.input_size)
 
         return image, boxes, labels, difficulties
 

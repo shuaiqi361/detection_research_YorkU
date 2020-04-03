@@ -119,8 +119,8 @@ def create_data_lists(voc07_path, voc12_path, output_folder):
 
 
 if __name__ == '__main__':
-    voc07_path = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/data/VOC_2007/VOCdevkit/VOC2007'
-    voc12_path = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/data/VOC_2012/VOCdevkit/VOC2012'
-    output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/data'
+    voc07_path = '/home/keyi/research/data/VOC_2007/VOCdevkit/VOC2007'
+    voc12_path = '/home/keyi/research/data/VOC_2012/VOCdevkit/VOC2012'
+    output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/VOC'
 
     create_data_lists(voc07_path, voc12_path, output_folder)
