@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(description='PyTorch 2D object detection traini
 parser.add_argument('--config', default='', type=str)
 parser.add_argument('--load-path', default='', type=str)
 parser.add_argument('--save-path', default='', type=str)
-parser.add_argument('--recover', action='store_false')
+parser.add_argument('--recover', action='store_true')
 parser.add_argument('-e', '--evaluate', action='store_true')
 
 
@@ -47,7 +47,7 @@ def main():
 
     config.n_classes = len(VOC_label_map)  # number of different types of objects
     batch_size = config.batch_size
-    config.internal_batchsize = 8
+    config.internal_batchsize = 4
     config.num_iter_flag = batch_size // config.internal_batchsize
 
     iterations = config.optimizer['max_iter'] * config.num_iter_flag
@@ -96,14 +96,14 @@ def main():
 
     # Custom dataloaders
     train_dataset = PascalVOCDataset(data_folder, split='train',
-                                     keep_difficult=keep_difficult)
+                                     keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config.internal_batchsize, shuffle=True,
                                                collate_fn=train_dataset.collate_fn, num_workers=workers,
                                                pin_memory=True)  # note that we're passing the collate function here
     # Load test data
     test_dataset = PascalVOCDataset(data_folder,
                                     split='test',
-                                    keep_difficult=keep_difficult)
+                                    keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.internal_batchsize, shuffle=False,
                                               collate_fn=test_dataset.collate_fn, num_workers=workers, pin_memory=True)
 
@@ -126,7 +126,7 @@ def main():
 
     cudnn.benchmark = True
     model = model.to(config.device)
-    criterion = criterion(priors_cxcy=model.priors_cxcy).to(config.device)
+    criterion = criterion(priors_cxcy=model.priors_cxcy, device=config.device).to(config.device)
 
     # create logger to track training results
     now = datetime.now()
@@ -136,7 +136,7 @@ def main():
                                                                 'log_{}_{}.txt'.format(config.model['arch'],
                                                                                        date_time)))
     config.logger.info('args: {}'.format(pprint.pformat(args)))
-    config.loggerr.info('config: {}'.format(pprint.pformat(config)))
+    config.logger.info('config: {}'.format(pprint.pformat(config)))
 
     epochs = iterations // (len(train_dataset) // config.internal_batchsize)
     print('Length of Dataset:', len(train_dataset))
@@ -154,7 +154,7 @@ def main():
 
         config.tb_logger.add_scalar('learning_rate', epoch)
 
-        _, current_mAP = evaluate(test_loader, model, epoch, config=config)
+        # _, current_mAP = evaluate(test_loader, model, epoch, config=config)
 
         train(train_loader=train_loader,
               model=model,
@@ -215,7 +215,7 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
             predicted_locs, predicted_scores = model(images)
 
             # Loss
-            loss = criterion(predicted_locs, predicted_scores, boxes, labels)
+            loss = criterion(predicted_locs, predicted_scores, boxes, labels) / config.num_iter_flag
         else:
             raise NotImplementedError
 
@@ -237,12 +237,12 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
             str_print = 'Epoch: [{0}][{1}/{2}]\t' \
                         'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t' \
                         'Data Time {data_time.val:.3f} ({data_time.avg:.3f})\t' \
-                        'Loss {loss.val:.4f} ({loss.avg:.4f})\n'.format(epoch, i, len(train_loader),
+                        'Loss {loss.val:.4f} ({loss.avg:.4f})'.format(epoch, i, len(train_loader),
                                                                         batch_time=batch_time,
                                                                         data_time=data_time, loss=losses)
             config.logger.info(str_print)
 
-    config.tb_logger.add_scalar('training_loss', losses, epoch)
+    config.tb_logger.add_scalar('training_loss', losses.avg, epoch)
 
     del predicted_locs, predicted_scores, images, boxes, labels
 
@@ -275,14 +275,14 @@ def evaluate(test_loader, model, epoch, config):
 
             # Forward prop.
             time_start = time.time()
-            _, predicted_locs, predicted_scores, rep_points = model(images)
+            if config.model['arch'].upper() == 'VGG_SSD':
+                predicted_locs, predicted_scores = model(images)
             time_end = time.time()
 
             # Detect objects in SSD output
-            det_boxes_batch, det_labels_batch, det_scores_batch, det_points_batch = \
+            det_boxes_batch, det_labels_batch, det_scores_batch = \
                 model.detect_objects(predicted_locs,
                                      predicted_scores,
-                                     rep_points,
                                      min_score=0.01,
                                      max_overlap=0.45,
                                      top_k=200)
@@ -309,10 +309,10 @@ def evaluate(test_loader, model, epoch, config):
     # Print AP for each class
     pp.pprint(APs)
 
-    # added to resume training
-    model.train()
+    # # added to resume training
+    # model.train()
 
-    str_print = 'EVAL: Mean Average Precision {0:.3f}, avg speed {1:.2f} Hz\n'.format(mAP, 1. / np.mean(detect_speed))
+    str_print = 'EVAL: Mean Average Precision {0:.3f}, avg speed {1:.2f} Hz'.format(mAP, 1. / np.mean(detect_speed))
     config.logger.info(str_print)
 
     return APs, mAP
