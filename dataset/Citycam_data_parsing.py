@@ -6,7 +6,7 @@ import cv2
 traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus']
 traffic_label_map = {k: v + 1 for v, k in enumerate(traffic_labels)}
 traffic_label_map['background'] = 0
-rev_VOC_label_map = {v: k for k, v in traffic_label_map.items()}  # Inverse mapping
+rev_traffic_label_map = {v: k for k, v in traffic_label_map.items()}  # Inverse mapping
 
 citycam_label_map = {1: {'name': 'taxi', 'uni_name': 'car'}, 2: {'name': 'black_sedan', 'uni_name': 'car'}
     , 3: {'name': 'other_cars', 'uni_name': 'car'}, 4: {'name': 'little_truck', 'uni_name': 'pickup'}
