@@ -16,6 +16,14 @@ distinct_colors = ['#e6194b', '#3cb44b', '#ffe119', '#0082c8', '#f58231', '#911e
 label_color_map = {k: distinct_colors[i] for i, k in enumerate(VOC_label_map.keys())}
 
 
+'''
+There are 16551 training images containing a total of 49653 objects. 
+Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/data.
+There are 4952 test images containing a total of 14856 objects. 
+Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/data.
+'''
+
+
 def parse_annotation(annotation_path):
     tree = ET.parse(annotation_path)
     root = tree.getroot()

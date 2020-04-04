@@ -1,51 +1,14 @@
 import json
 import os
-import xml.etree.ElementTree as ET
 from pycocotools.coco import COCO
-import numpy as np
-import skimage.io as io
-import matplotlib.pyplot as plt
-import pylab
 
+'''
+There are 117266 training images containing a total of 860001 objects. 
+Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/COCO.
+There are 4952 validation images containing a total of 36781 objects. 
+Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/COCO.
+'''
 
-# dataDir = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/data/COCO17'
-# dataType = 'val2017'
-# annFile = '{}/annotations/instances_{}.json'.format(dataDir, dataType)
-# coco = COCO(annFile)
-#
-# # display COCO categories and supercategories
-# cats = coco.loadCats(coco.getCatIds())
-# nms = [cat['name'] for cat in cats]
-# print('COCO categories: \n{}\n'.format(' '.join(nms)))
-#
-#
-# # Label map
-# coco_labels = nms
-# coco_label_map = {k: v + 1 for v, k in enumerate(coco_labels)}
-# coco_label_map['background'] = 0
-# rev_coco_label_map = {v: k for k, v in coco_label_map.items()}  # Inverse mapping
-# print('total num classes: ', len(coco_labels))
-# catIds = coco.getCatIds(catNms=nms)
-# annIds = coco.getAnnIds(catIds=catIds)
-# all_anns = coco.loadAnns(ids=annIds)
-#
-# for annotation in all_anns:
-#     if annotation['iscrowd'] == 1:
-#         continue
-#
-#     img = coco.loadImgs(annotation['image_id'])[0]
-#     image_path = '%s/images/%s/%s' % (dataDir, dataType, img['file_name'])
-#     bbox = annotation['bbox']
-#     print(annotation)
-#     print(annotation['bbox'])
-#     print(img)
-#     cat_id = annotation['category_id']
-#     cat_name = coco.loadCats([cat_id])[0]['name']
-#     print('current object label: ', cat_name)
-#
-#     if cat_name in coco_label_map.keys():
-#         label = coco_label_map[cat_name]
-#         print('Digit for object: ', label)
 
 def create_data_lists_coco17(coco_root_path, output_folder):
     """
@@ -89,7 +52,8 @@ def create_data_lists_coco17(coco_root_path, output_folder):
 
         image_id = annotation['image_id']
         if image_id not in all_images_dict.keys():
-            all_images_dict[image_id] = {'image_path': '', 'bbox': [], 'labels': [], 'cat_names': []}
+            all_images_dict[image_id] = {'image_path': '', 'bbox': [], 'labels': [],
+                                         'cat_names': [], 'difficulties': []}
 
         img = coco.loadImgs(image_id)[0]
         image_path = '%s/%s/%s' % (image_folder, dataType, img['file_name'])
@@ -103,6 +67,7 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         cat_id = annotation['category_id']
         cat_name = coco.loadCats([cat_id])[0]['name']
         all_images_dict[image_id]['cat_names'].append(cat_name)
+        all_images_dict[image_id]['difficulties'].append(0)  # this is not used
 
         if cat_name in coco_label_map.keys():
             label = coco_label_map[cat_name]
@@ -110,14 +75,15 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         else:
             del all_images_dict[image_id]  # class must be in these 80 classes
 
-        print('Loading training objects from COCO17 annotations:', count_obj, '/', len(all_anns))
+        # print('Loading training objects from COCO17 annotations:', count_obj, '/', len(all_anns))
 
     for img_id, annots in all_images_dict.items():
         train_images.append(annots['image_path'])
         objects_coco = {'bbox': annots['bbox'], 'labels': annots['labels'], 'cat_names': annots['cat_names']}
         train_objects.append(objects_coco)
 
-    print('Total training images: ', len(train_images))
+    print('\nThere are %d training images containing a total of %d objects. Files have been saved to %s.' % (
+        len(train_images), count_obj, os.path.abspath(output_folder)))
     assert len(train_objects) == len(train_images)
 
     # Save to file
@@ -156,7 +122,7 @@ def create_data_lists_coco17(coco_root_path, output_folder):
 
         image_id = annotation['image_id']
         if image_id not in all_images_dict.keys():
-            all_images_dict[image_id] = {'image_path': '', 'bbox': [], 'labels': [], 'cat_names': []}
+            all_images_dict[image_id] = {'image_path': '', 'bbox': [], 'labels': [], 'cat_names': [], 'difficulties': []}
 
         img = coco.loadImgs(image_id)[0]
         image_path = '%s/%s/%s' % (image_folder, dataType, img['file_name'])
@@ -170,6 +136,7 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         cat_id = annotation['category_id']
         cat_name = coco.loadCats([cat_id])[0]['name']
         all_images_dict[image_id]['cat_names'].append(cat_name)
+        all_images_dict[image_id]['difficulties'].append(0)  # this is not used
 
         if cat_name in coco_label_map.keys():
             label = coco_label_map[cat_name]
@@ -177,21 +144,24 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         else:
             del all_images_dict[image_id]  # class must be in these 80 classes
 
-        print('Loading validation objects from COCO17 annotations:', count_obj, '/', len(all_anns))
+        # print('Loading validation objects from COCO17 annotations:', count_obj, '/', len(all_anns))
 
     for img_id, annots in all_images_dict.items():
-        train_images.append(annots['image_path'])
+        test_images.append(annots['image_path'])
         objects_coco = {'bbox': annots['bbox'], 'labels': annots['labels'], 'cat_names': annots['cat_names']}
-        train_objects.append(objects_coco)
+        test_objects.append(objects_coco)
 
-    print('Total validation images: ', len(train_images))
-    assert len(train_objects) == len(train_images)
+    # print('Total validation images: ', len(test_images))
+    assert len(test_objects) == len(test_images)
 
     # Save to file
     with open(os.path.join(output_folder, 'VAL_images.json'), 'w') as j:
-        json.dump(train_images, j)
+        json.dump(test_images, j)
     with open(os.path.join(output_folder, 'VAL_objects.json'), 'w') as j:
-        json.dump(train_objects, j)
+        json.dump(test_objects, j)
+
+    print('\nThere are %d validation images containing a total of %d objects. Files have been saved to %s.' % (
+        len(test_images), count_obj, os.path.abspath(output_folder)))
 
 
 if __name__ == '__main__':

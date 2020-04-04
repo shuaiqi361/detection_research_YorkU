@@ -301,7 +301,7 @@ def transform(image, boxes, labels, difficulties, split, resize=(512, 512)):
     :param split: one of 'TRAIN' or 'TEST', since different sets of transformations are applied
     :return: transformed image, transformed bounding box coordinates, transformed labels, transformed difficulties
     """
-    assert split in {'TRAIN', 'TEST'}
+    assert split in {'TRAIN', 'TEST', 'VAL'}
 
     # Mean and standard deviation of ImageNet data that our base VGG from torchvision was trained on
     # see: https://pytorch.org/docs/stable/torchvision/models.html
