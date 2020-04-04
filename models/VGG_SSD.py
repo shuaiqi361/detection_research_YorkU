@@ -52,7 +52,6 @@ class VGGBase(nn.Module):
     def forward(self, image):
         """
         Forward propagation.
-
         :param image: images, a tensor of dimensions (N, 3, 512, 512)
         :return: lower-level feature maps conv4_3 and conv7
         """
@@ -573,7 +572,6 @@ class SSD512(nn.Module):
 class MultiBoxLoss(nn.Module):
     """
     The MultiBox loss, a loss function for object detection.
-
     This is a combination of:
     (1) a localization loss for the predicted locations of the boxes, and
     (2) a confidence loss for the predicted class scores.
@@ -690,7 +688,8 @@ class MultiBoxLoss(nn.Module):
         hard_negatives = hardness_ranks < n_hard_negatives.unsqueeze(1)  # (N, 22536)
         conf_loss_hard_neg = conf_loss_neg[hard_negatives]  # (sum(n_hard_negatives))
 
-        # As in the paper, averaged over positive priors only, although computed over both positive and hard-negative priors
+        # As in the paper, averaged over positive priors only,
+        # although computed over both positive and hard-negative priors
         conf_loss = (conf_loss_hard_neg.sum() + conf_loss_pos.sum()) / n_positives.sum().float()  # (), scalar
 
         # TOTAL LOSS
