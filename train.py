@@ -304,7 +304,7 @@ def evaluate(test_loader, model, epoch, config):
             detect_speed.append((time_end - time_start) / len(labels))
 
         # Calculate mAP
-        APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties)
+        APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties, VOC_label_map, config.device)
 
     # Print AP for each class
     pp.pprint(APs)
