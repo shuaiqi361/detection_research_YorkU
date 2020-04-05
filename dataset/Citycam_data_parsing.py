@@ -105,9 +105,11 @@ def create_data_lists_citycam(root_path, output_folder):
                     else:
                         n_object += len(objects)
 
-                    train_objects.append(objects)
                     frame_id = int(frame.strip('.xml'))
                     image_name = '{:06d}.jpg'.format(frame_id)
+                    if not os.path.exists(os.path.join(frame_path, image_name)):
+                        continue
+                    train_objects.append(objects)
                     train_images.append(os.path.join(frame_path, image_name))
 
     assert len(train_objects) == len(train_images)
