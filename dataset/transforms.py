@@ -121,8 +121,7 @@ def expand(image, boxes, filler):
     new_image[:, top:bottom, left:right] = image
 
     # Adjust bounding boxes' coordinates accordingly
-    new_boxes = boxes + torch.FloatTensor([left, top, left, top]).unsqueeze(
-        0)  # (n_objects, 4), n_objects is the no. of objects in this image
+    new_boxes = boxes + torch.FloatTensor([left, top, left, top]).unsqueeze(0)  # (n_objects, 4), n_objects is the no. of objects in this image
 
     return new_image, new_boxes
 
@@ -177,6 +176,7 @@ def random_crop(image, boxes, labels, difficulties):
             crop = torch.FloatTensor([left, top, right, bottom])  # (4)
 
             # Calculate Jaccard overlap between the crop and the bounding boxes
+            print('Before input:', boxes.size(), crop.unsqueeze(0).size())
             overlap = find_jaccard_overlap(crop.unsqueeze(0),
                                            boxes)  # (1, n_objects), n_objects is the no. of objects in this image
             overlap = overlap.squeeze(0)  # (n_objects)
@@ -312,6 +312,7 @@ def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512)):
     new_boxes = boxes
     new_labels = labels
     new_difficulties = difficulties
+
     # Skip the following operations for evaluation/testing
     if split == 'TRAIN':
         # A series of photometric distortions in random order, each with 50% chance of occurrence, as in Caffe repo
@@ -322,8 +323,8 @@ def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512)):
 
         # Expand image (zoom out) with a 50% chance - helpful for training detection of small objects
         # Fill surrounding space with the mean of ImageNet data that our base VGG was trained on
-        if random.random() < 0.5:
-            new_image, new_boxes = expand(new_image, boxes, filler=mean)
+        # if random.random() < 0.5 and len(boxes) != 0:
+        #     new_image, new_boxes = expand(new_image, boxes, filler=mean)
 
         # Randomly crop image (zoom in)
         new_image, new_boxes, new_labels, new_difficulties = random_crop(new_image, new_boxes, new_labels,

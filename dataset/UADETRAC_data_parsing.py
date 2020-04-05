@@ -45,8 +45,8 @@ def parse_annotation(annotation_path, image_folder):
             height = float(bbox['height'])
             xmin = int(left)
             ymin = int(top)
-            xmax = int(left + width)
-            ymax = int(top + height)
+            xmax = int(left + width) - 1
+            ymax = int(top + height) - 1
 
             difficult = 0
 
