@@ -166,9 +166,9 @@ def create_data_lists_citycam(root_path, output_folder):
 
 
 if __name__ == '__main__':
-    # root_path = '/home/keyi/research/data/CityCam'
-    # output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/Citycam'
-    root_path = '/media/keyi/Data/Research/traffic/data/Citycam/CityCam'
-    output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/Citycam'
+    root_path = '/home/keyi/research/data/CityCam'
+    output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/Citycam'
+    # root_path = '/media/keyi/Data/Research/traffic/data/Citycam/CityCam'
+    # output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/Citycam'
 
     create_data_lists_citycam(root_path, output_folder)

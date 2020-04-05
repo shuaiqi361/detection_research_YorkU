@@ -184,7 +184,9 @@ class TrafficDataset(Dataset):
 
         if isinstance(self.data_folder_list, list):
             for data_folder in self.data_folder_list:
-                # Read data files
+                # Read data files, skip data with no validation split set
+                if not os.path.exists(os.path.join(data_folder, self.split + '_images.json')):
+                    continue
                 with open(os.path.join(data_folder, self.split + '_images.json'), 'r') as j:
                     self.images += json.load(j)
                 with open(os.path.join(data_folder, self.split + '_objects.json'), 'r') as j:

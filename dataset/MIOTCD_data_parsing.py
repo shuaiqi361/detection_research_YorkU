@@ -15,7 +15,7 @@ MIO_classes = ['articulated_truck', 'bicycle', 'bus', 'car', 'motorcycle',
                'motorized_vehicle', 'non-motorized_vehicle', 'pedestrian',
                'pickup_truck', 'single_unit_truck', 'work_van']
 '''
-There are 107446 training images containing a total of 312129 objects. 
+There are 107446 training images containing a total of 312129 objects.
 Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/MIOTCD
 No ground truth for testing images
 '''
@@ -83,7 +83,7 @@ def create_data_lists_MIOTCD(root_path, output_folder):
 
 
 if __name__ == '__main__':
-    root_path = '/media/keyi/Data/Research/traffic/data/MIOTCD/MIO-TCD-Localization'
-    output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/MIOTCD'
+    root_path = '/home/keyi/research/data/MIOTCD/MIO-TCD-Localization'
+    output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/MIOTCD'
 
     create_data_lists_MIOTCD(root_path, output_folder)

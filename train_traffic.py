@@ -163,7 +163,7 @@ def main():
               epoch=epoch, config=config)
 
         # Save checkpoint
-        if epoch >= val_freq and epoch % val_freq == 0:
+        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 2:
             _, current_mAP = evaluate(test_loader, model, epoch, config=config)
             config.tb_logger.add_scalar('mAP', current_mAP, epoch)
             if current_mAP > best_mAP:
@@ -172,13 +172,12 @@ def main():
                 best_mAP = current_mAP
 
     # Save the last checkpoint if it is better
-    if epoch >= val_freq and epoch % val_freq == 0:
-        _, current_mAP = evaluate(test_loader, model, epoch, config=config)
-        config.tb_logger.add_scalar('mAP', current_mAP, epoch)
-        if current_mAP > best_mAP:
-            save_checkpoint(epoch, model, optimizer,
-                            name='{}/checkpoint_epoch-{}.pth.tar'.format(config.save_path, epoch))
-            best_mAP = current_mAP
+    _, current_mAP = evaluate(test_loader, model, epoch, config=config)
+    config.tb_logger.add_scalar('mAP', current_mAP, epoch)
+    if current_mAP > best_mAP:
+        save_checkpoint(epoch, model, optimizer,
+                        name='{}/checkpoint_epoch-{}.pth.tar'.format(config.save_path, epoch))
+        best_mAP = current_mAP
 
 
 def train(train_loader, model, criterion, optimizer, epoch, config):
