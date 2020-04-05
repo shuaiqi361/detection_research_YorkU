@@ -20,7 +20,7 @@ from utils import create_logger, save_checkpoint
 from metrics import AverageMeter, calculate_mAP
 from dataset.Citycam_data_parsing import traffic_label_map
 
-parser = argparse.ArgumentParser(description='PyTorch 2D object detection training script.')
+parser = argparse.ArgumentParser(description='PyTorch 2D traffic detection training script.')
 parser.add_argument('--config', default='', type=str)
 parser.add_argument('--load-path', default='', type=str)
 parser.add_argument('--save-path', default='', type=str)
@@ -210,7 +210,7 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
         boxes = [b.to(config.device) for b in boxes]
         labels = [l.to(config.device) for l in labels]
 
-        if config.model['arch'].upper() == 'VGG_SSD':
+        if config.model['arch'].upper() == 'VGG_SSD2':
             # Forward prop.
             predicted_locs, predicted_scores = model(images)
 
@@ -275,7 +275,7 @@ def evaluate(test_loader, model, epoch, config):
 
             # Forward prop.
             time_start = time.time()
-            if config.model['arch'].upper() == 'VGG_SSD':
+            if config.model['arch'].upper() == 'VGG_SSD2':
                 predicted_locs, predicted_scores = model(images)
             time_end = time.time()
 
