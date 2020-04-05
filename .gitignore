@@ -9,6 +9,7 @@ dataset/COCO/*
 dataset/VOC/*
 dataset/Citycam/*
 dataset/DETRAC/*
+dataset/MIOTCD/*
 dataset/__pycache__/*
 models/__pycache__/*
 experiment/*
