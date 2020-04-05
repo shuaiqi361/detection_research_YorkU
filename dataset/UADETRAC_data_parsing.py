@@ -8,9 +8,9 @@ traffic_label_map['background'] = 0
 rev_traffic_label_map = {v: k for k, v in traffic_label_map.items()}  # Inverse mapping
 
 '''
-There are 82085 training images containing a total of 594555 objects. 
+There are 82085 training images containing a total of 594555 objects.
 Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/DETRAC.
-There are 56167 validation images containing a total of 658859 objects. 
+There are 56167 validation images containing a total of 658859 objects.
 Files have been saved to /media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/DETRAC.
 '''
 
@@ -146,7 +146,7 @@ def create_data_lists_detrac(root_path, output_folder):
 
 
 if __name__ == '__main__':
-    root_path = '/media/keyi/Data/Research/traffic/data/DETRAC'
-    output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/DETRAC'
+    root_path = '/home/keyi/research/data/DETRAC'
+    output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/DETRAC'
 
     create_data_lists_detrac(root_path, output_folder)

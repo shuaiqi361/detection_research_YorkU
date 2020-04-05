@@ -15,7 +15,7 @@ from easydict import EasyDict
 
 from scheduler import adjust_learning_rate
 from models import model_entry
-from dataset.Datasets import PascalVOCDataset
+from dataset.Datasets import TrafficDataset
 from utils import create_logger, save_checkpoint
 from metrics import AverageMeter, calculate_mAP
 from dataset.Citycam_data_parsing import traffic_label_map
@@ -95,13 +95,13 @@ def main():
             raise NotImplementedError
 
     # Custom dataloaders
-    train_dataset = PascalVOCDataset(data_folder, split='train',
+    train_dataset = TrafficDataset(data_folder, split='train',
                                      keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config.internal_batchsize, shuffle=True,
                                                collate_fn=train_dataset.collate_fn, num_workers=workers,
                                                pin_memory=True)  # note that we're passing the collate function here
     # Load test data
-    test_dataset = PascalVOCDataset(data_folder,
+    test_dataset = TrafficDataset(data_folder,
                                     split='val',
                                     keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.internal_batchsize, shuffle=False,
@@ -277,7 +277,7 @@ def evaluate(test_loader, model, epoch, config):
             time_start = time.time()
             if config.model['arch'].upper() == 'VGG_SSD2':
                 predicted_locs, predicted_scores = model(images)
-            time_end = time.time()
+
 
             # Detect objects in SSD output
             det_boxes_batch, det_labels_batch, det_scores_batch = \
@@ -286,6 +286,7 @@ def evaluate(test_loader, model, epoch, config):
                                      min_score=0.01,
                                      max_overlap=0.45,
                                      top_k=200)
+            time_end = time.time()
 
             # Evaluation MUST be at min_score=0.01, max_overlap=0.45, top_k=200
             # for fair comparision with the paper's results and other repos

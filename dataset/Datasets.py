@@ -177,7 +177,8 @@ class TrafficDataset(Dataset):
         self.input_size = input_size
         assert self.split in {'TRAIN', 'TEST', 'VAL'}
         self.keep_difficult = keep_difficult
-        self.data_folder_list = data_folder_list
+        self.data_folder_list = data_folder_list.split(' ')
+
         self.images = list()
         self.objects = list()
 
@@ -204,7 +205,7 @@ class TrafficDataset(Dataset):
 
         # Read objects in this image (bounding boxes, labels, difficulties)
         objects = self.objects[i]
-        boxes = torch.FloatTensor(objects['bbox'])  # (n_objects, 4)
+        boxes = torch.FloatTensor(objects['boxes'])  # (n_objects, 4)
         labels = torch.LongTensor(objects['labels'])  # (n_objects)
         difficulties = torch.ByteTensor(objects['difficulties'])  # (n_objects)
 

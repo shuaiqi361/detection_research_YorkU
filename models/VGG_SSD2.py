@@ -205,13 +205,13 @@ class PredictionConvolutions(nn.Module):
         self.n_classes = n_classes
 
         # Number of prior-boxes we are considering per position in each feature map
-        n_boxes = {'conv4_3': 2,
+        n_boxes = {'conv4_3': 1,
                    'conv5_3': 4,
                    'conv7': 4,
                    'conv8_2': 6,
                    'conv9_2': 6,
                    'conv10_2': 6,
-                   'conv11_2': 6}
+                   'conv11_2': 4}
         # 4 prior-boxes implies we use 4 different aspect ratios, etc.
 
         # Localization prediction convolutions (predict offsets w.r.t prior-boxes)
@@ -426,7 +426,7 @@ class SSD512(nn.Module):
                          'conv8_2': [1., 2., 3., 0.5, .333],
                          'conv9_2': [1., 2., 3., 0.5, .333],
                          'conv10_2': [1., 2., 3., 0.5, .333],
-                         'conv11_2': [1., 2., 3., 0.5, .333]}
+                         'conv11_2': [1., 2., 0.5]}
 
         fmaps = list(fmap_dims.keys())
 
@@ -443,7 +443,7 @@ class SSD512(nn.Module):
 
                         # For an aspect ratio of 1, use an additional prior whose scale is the geometric mean of the
                         # scale of the current feature map and the scale of the next feature map
-                        if ratio == 1.:
+                        if ratio == 1. and fmap != 'conv4_3':
                             try:
                                 # use the geometric mean to calculate the additional scale for each level of fmap
                                 additional_scale = sqrt(obj_scales[fmap] * obj_scales[fmaps[k + 1]])
