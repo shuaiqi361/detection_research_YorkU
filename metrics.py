@@ -152,13 +152,10 @@ def find_intersection(set_1, set_2):
     """
 
     # PyTorch auto-broadcasts singleton dimensions
-    print(set_1.size(), set_2.size())
     lower_bounds = torch.max(set_1[:, :2].unsqueeze(1), set_2[:, :2].unsqueeze(0))  # (n1, n2, 2)
     upper_bounds = torch.min(set_1[:, 2:].unsqueeze(1), set_2[:, 2:].unsqueeze(0))  # (n1, n2, 2)
     intersection_dims = torch.clamp(upper_bounds - lower_bounds, min=0)  # (n1, n2, 2)
-    # print('Find intersection: ')
-    # print(lower_bounds.size())
-    # print(intersection_dims.size())
+
     return intersection_dims[:, :, 0] * intersection_dims[:, :, 1]  # (n1, n2)
 
 

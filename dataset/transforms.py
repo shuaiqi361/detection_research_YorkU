@@ -176,7 +176,6 @@ def random_crop(image, boxes, labels, difficulties):
             crop = torch.FloatTensor([left, top, right, bottom])  # (4)
 
             # Calculate Jaccard overlap between the crop and the bounding boxes
-            print('Before input:', boxes.size(), crop.unsqueeze(0).size())
             overlap = find_jaccard_overlap(crop.unsqueeze(0),
                                            boxes)  # (1, n_objects), n_objects is the no. of objects in this image
             overlap = overlap.squeeze(0)  # (n_objects)

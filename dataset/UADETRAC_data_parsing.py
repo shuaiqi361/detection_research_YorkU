@@ -54,6 +54,9 @@ def parse_annotation(annotation_path, image_folder):
             labels.append(uni_label)
             difficulties.append(difficult)
 
+        if len(boxes) == 0:
+            print('Images with no objects: ', os.path.join(image_folder, image_name))
+            continue
         object_list.append({'boxes': boxes, 'labels': labels, 'difficulties': difficulties})
         image_paths.append(os.path.join(image_folder, image_name))
 
@@ -146,7 +149,9 @@ def create_data_lists_detrac(root_path, output_folder):
 
 
 if __name__ == '__main__':
-    root_path = '/home/keyi/research/data/DETRAC'
-    output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/DETRAC'
+    # root_path = '/home/keyi/research/data/DETRAC'
+    # output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/DETRAC'
+    root_path = '/media/keyi/Data/Research/traffic/data/DETRAC'
+    output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/DETRAC'
 
     create_data_lists_detrac(root_path, output_folder)

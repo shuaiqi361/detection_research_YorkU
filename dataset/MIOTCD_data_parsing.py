@@ -36,6 +36,8 @@ def create_data_lists_MIOTCD(root_path, output_folder):
     n_objects = 0
     for line in lines:
         elements = line.strip('\n').split(',')
+        if len(elements) < 6:
+            continue
         image_id = elements[0]
         # image_name = image_id + '.jpg'
         obj_class = elements[1]

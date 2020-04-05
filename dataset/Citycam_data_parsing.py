@@ -61,6 +61,9 @@ def parse_annotation(annotation_path):
         labels.append(uni_label)
         difficulties.append(difficult)
 
+    if len(boxes) == 0:
+        print('Images with no objects: ', annotation_path)
+        return {}
     return {'boxes': boxes, 'labels': labels, 'difficulties': difficulties}
 
 
@@ -94,7 +97,7 @@ def create_data_lists_citycam(root_path, output_folder):
 
             for frame in os.listdir(frame_path):
                 if frame.endswith('.xml') and os.path.exists(os.path.join(frame_path, frame)):
-                    print('Loading annotation:', os.path.join(frame_path, frame))
+                    # print('Loading annotation:', os.path.join(frame_path, frame))
                     objects = parse_annotation(os.path.join(frame_path, frame))
                     if len(objects) == 0:
                         n_skipped += 1
@@ -163,7 +166,9 @@ def create_data_lists_citycam(root_path, output_folder):
 
 
 if __name__ == '__main__':
-    root_path = '/home/keyi/research/data/CityCam'
-    output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/Citycam'
+    # root_path = '/home/keyi/research/data/CityCam'
+    # output_folder = '/home/keyi/research/code/traffic/detection_research_YorkU/dataset/Citycam'
+    root_path = '/media/keyi/Data/Research/traffic/data/Citycam/CityCam'
+    output_folder = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/Citycam'
 
     create_data_lists_citycam(root_path, output_folder)
