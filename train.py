@@ -84,14 +84,18 @@ def main():
         # Initialize the optimizer, with twice the default learning rate for biases, as in the original Caffe repo
         biases = list()
         not_biases = list()
+        base_params = list()
         for param_name, param in model.named_parameters():
             if param.requires_grad:
-                if param_name.endswith('.bias'):
+                if param_name.startswith('base.'):
+                    base_params.append(param)
+                elif param_name.endswith('.bias'):
                     biases.append(param)
                 else:
                     not_biases.append(param)
         if config.optimizer['type'].upper() == 'SGD':
-            optimizer = torch.optim.SGD(params=[{'params': biases, 'lr': 2 * lr}, {'params': not_biases}],
+            optimizer = torch.optim.SGD(params=[{'params': biases, 'lr': 2 * lr}, {'params': not_biases},
+                                        {'params': base_params, 'lr': 0.1 * lr}],
                                         lr=lr, momentum=momentum, weight_decay=weight_decay)
         elif config.optimizer['type'].upper() == 'ADAM':
             optimizer = torch.optim.Adam(params=[{'params': biases, 'lr': 2 * lr}, {'params': not_biases}],
