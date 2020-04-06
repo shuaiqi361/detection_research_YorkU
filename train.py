@@ -12,10 +12,11 @@ import yaml
 from tensorboardX import SummaryWriter
 import argparse
 from easydict import EasyDict
+import json
 
 from scheduler import adjust_learning_rate
 from models import model_entry
-from dataset.Datasets import PascalVOCDataset
+from dataset.Datasets import PascalVOCDataset, COCO17Dataset
 from utils import create_logger, save_checkpoint
 from dataset.VOC_data_parsing import VOC_label_map
 from metrics import AverageMeter, calculate_mAP
@@ -45,10 +46,14 @@ def main():
     if not os.path.exists(config.event_path):
         os.mkdir(config.event_path)
 
-    config.n_classes = len(VOC_label_map)  # number of different types of objects
+
     batch_size = config.batch_size
     config.internal_batchsize = 4
     config.num_iter_flag = batch_size // config.internal_batchsize
+    with open(config.label_path, 'r') as j:
+        config.label_map = json.load(j)
+
+    config.n_classes = len(config.label_map)  # number of different types of objects
 
     iterations = config.optimizer['max_iter'] * config.num_iter_flag
     workers = config.workers
@@ -61,7 +66,8 @@ def main():
     weight_decay = config.optimizer['weight_decay']
     config.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
-    data_folder = config.data_root
+    train_data_folder = config.train_data_root
+    val_data_folder = config.val_data_root
     keep_difficult = config.keep_difficult
 
     # Learning parameters
@@ -95,14 +101,14 @@ def main():
             raise NotImplementedError
 
     # Custom dataloaders
-    train_dataset = PascalVOCDataset(data_folder, split='train',
+    train_dataset = COCO17Dataset(train_data_folder, split='train',
                                      keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config.internal_batchsize, shuffle=True,
                                                collate_fn=train_dataset.collate_fn, num_workers=workers,
                                                pin_memory=True)  # note that we're passing the collate function here
     # Load test data
-    test_dataset = PascalVOCDataset(data_folder,
-                                    split='test',
+    test_dataset = COCO17Dataset(val_data_folder,
+                                    split='val',
                                     keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.internal_batchsize, shuffle=False,
                                               collate_fn=test_dataset.collate_fn, num_workers=workers, pin_memory=True)
@@ -163,7 +169,7 @@ def main():
               epoch=epoch, config=config)
 
         # Save checkpoint
-        if epoch >= val_freq and epoch % val_freq == 0:
+        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 5:
             _, current_mAP = evaluate(test_loader, model, epoch, config=config)
             config.tb_logger.add_scalar('mAP', current_mAP, epoch)
             if current_mAP > best_mAP:
@@ -172,13 +178,12 @@ def main():
                 best_mAP = current_mAP
 
     # Save the last checkpoint if it is better
-    if epoch >= val_freq and epoch % val_freq == 0:
-        _, current_mAP = evaluate(test_loader, model, epoch, config=config)
-        config.tb_logger.add_scalar('mAP', current_mAP, epoch)
-        if current_mAP > best_mAP:
-            save_checkpoint(epoch, model, optimizer,
-                            name='{}/checkpoint_epoch-{}.pth.tar'.format(config.save_path, epoch))
-            best_mAP = current_mAP
+    _, current_mAP = evaluate(test_loader, model, epoch, config=config)
+    config.tb_logger.add_scalar('mAP', current_mAP, epoch)
+    if current_mAP > best_mAP:
+        save_checkpoint(epoch, model, optimizer,
+                        name='{}/checkpoint_epoch-{}.pth.tar'.format(config.save_path, epoch))
+        best_mAP = current_mAP
 
 
 def train(train_loader, model, criterion, optimizer, epoch, config):

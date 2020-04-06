@@ -79,7 +79,7 @@ def create_data_lists_coco17(coco_root_path, output_folder):
 
     for img_id, annots in all_images_dict.items():
         train_images.append(annots['image_path'])
-        objects_coco = {'bbox': annots['bbox'], 'labels': annots['labels'], 'cat_names': annots['cat_names']}
+        objects_coco = {'bbox': annots['bbox'], 'labels': annots['labels'], 'difficulties': annots['difficulties']}
         train_objects.append(objects_coco)
 
     print('\nThere are %d training images containing a total of %d objects. Files have been saved to %s.' % (

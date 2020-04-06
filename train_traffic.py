@@ -12,13 +12,14 @@ import yaml
 from tensorboardX import SummaryWriter
 import argparse
 from easydict import EasyDict
+import json
 
 from scheduler import adjust_learning_rate
 from models import model_entry
 from dataset.Datasets import TrafficDataset
 from utils import create_logger, save_checkpoint
 from metrics import AverageMeter, calculate_mAP
-from dataset.Citycam_data_parsing import traffic_label_map
+
 
 parser = argparse.ArgumentParser(description='PyTorch 2D traffic detection training script.')
 parser.add_argument('--config', default='', type=str)
@@ -45,10 +46,14 @@ def main():
     if not os.path.exists(config.event_path):
         os.mkdir(config.event_path)
 
-    config.n_classes = len(traffic_label_map)  # number of different types of objects
+
     batch_size = config.batch_size
     config.internal_batchsize = 2
     config.num_iter_flag = batch_size // config.internal_batchsize
+    with open(config.label_path, 'r') as j:
+        config.label_map = json.load(j)
+
+    config.n_classes = len(config.label_map)  # number of different types of objects
 
     iterations = config.optimizer['max_iter'] * config.num_iter_flag
     workers = config.workers
@@ -61,7 +66,8 @@ def main():
     weight_decay = config.optimizer['weight_decay']
     config.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    data_folder = config.data_root
+    train_data_folder = config.train_data_root
+    val_data_folder = config.val_data_root
     keep_difficult = config.keep_difficult
 
     # Learning parameters
@@ -95,13 +101,13 @@ def main():
             raise NotImplementedError
 
     # Custom dataloaders
-    train_dataset = TrafficDataset(data_folder, split='train',
+    train_dataset = TrafficDataset(train_data_folder, split='train',
                                      keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config.internal_batchsize, shuffle=True,
                                                collate_fn=train_dataset.collate_fn, num_workers=workers,
                                                pin_memory=True)  # note that we're passing the collate function here
     # Load test data
-    test_dataset = TrafficDataset(data_folder,
+    test_dataset = TrafficDataset(val_data_folder,
                                     split='val',
                                     keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.internal_batchsize, shuffle=False,
@@ -154,7 +160,7 @@ def main():
 
         config.tb_logger.add_scalar('learning_rate', epoch)
 
-        # _, current_mAP = evaluate(test_loader, model, epoch, config=config)
+        _, current_mAP = evaluate(test_loader, model, epoch, config=config)
 
         train(train_loader=train_loader,
               model=model,
@@ -304,7 +310,7 @@ def evaluate(test_loader, model, epoch, config):
             detect_speed.append((time_end - time_start) / len(labels))
 
         # Calculate mAP
-        APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties, VOC_label_map, config.device)
+        APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties, config.label_map, config.device)
 
     # Print AP for each class
     pp.pprint(APs)
