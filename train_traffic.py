@@ -17,7 +17,7 @@ import json
 from scheduler import adjust_learning_rate
 from models import model_entry
 from dataset.Datasets import TrafficDataset
-from utils import create_logger, save_checkpoint
+from utils import create_logger, save_checkpoint, clip_gradient
 from metrics import AverageMeter, calculate_mAP
 
 
@@ -227,6 +227,10 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
         # Backward prop.
         if i % config.num_iter_flag == 0 and i != 0:
             loss.backward()
+
+            if config.grad_clip:
+                clip_gradient(optimizer, config.grad_clip_mag)
+
             optimizer.step()
             optimizer.zero_grad()
         else:
