@@ -48,7 +48,6 @@ def main():
 
 
     batch_size = config.batch_size
-    config.internal_batchsize = 4
     config.num_iter_flag = batch_size // config.internal_batchsize
     with open(config.label_path, 'r') as j:
         config.label_map = json.load(j)
