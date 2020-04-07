@@ -52,18 +52,22 @@ def parse_annotation(annotation_path):
         uni_label = traffic_label_map[uni_name]
 
         bbox = object.find('bndbox')
-        xmin = int(bbox.find('xmin').text)
-        ymin = int(bbox.find('ymin').text)
-        xmax = int(bbox.find('xmax').text)
-        ymax = int(bbox.find('ymax').text)
+
+        xmin = max(int(bbox.find('xmin').text), 0)
+        ymin = max(int(bbox.find('ymin').text), 0)
+        xmax = int(bbox.find('xmax').text) - 1
+        ymax = int(bbox.find('ymax').text) - 1
+        if xmax - xmin < 5 or ymax - ymin < 5:
+            print('Improper annotation:', annotation_path)
+            return {}
 
         boxes.append([xmin, ymin, xmax, ymax])
         labels.append(uni_label)
         difficulties.append(difficult)
 
-    if len(boxes) == 0:
-        print('Images with no objects: ', annotation_path)
-        return {}
+    # if len(boxes) == 0:
+    #     print('Images with no objects: ', annotation_path)
+    #     return {}
     return {'boxes': boxes, 'labels': labels, 'difficulties': difficulties}
 
 

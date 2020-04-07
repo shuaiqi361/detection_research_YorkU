@@ -348,6 +348,7 @@ class SSD512(nn.Module):
         self.device = device
         self.n_classes = n_classes
         self.base = VGGBase()
+        # self.disable_parameter_requires_grad(self.base)
         self.aux_convs = AuxiliaryConvolutions()
         self.pred_convs = PredictionConvolutions(n_classes)
 
@@ -362,6 +363,10 @@ class SSD512(nn.Module):
 
         # Prior boxes
         self.priors_cxcy = self.create_prior_boxes()
+
+    def disable_parameter_requires_grad(self, m):
+        for param in m.parameters():
+            param.requires_grad = False
 
     def forward(self, image):
         """

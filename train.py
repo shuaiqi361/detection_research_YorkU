@@ -144,10 +144,12 @@ def main():
     config.logger.info('config: {}'.format(pprint.pformat(config)))
 
     epochs = iterations // (len(train_dataset) // config.internal_batchsize)
-    print('Length of Dataset:', len(train_dataset))
+
     decay_lr_at = [it // (len(train_dataset) // config.internal_batchsize) for it in
                    decay_lr_at]  # calculate epoch to decay
     print('total train epochs: ', epochs, ' training starts ......')
+    str_print = 'Dataset size: {}'.format(len(train_dataset) * config.internal_batchsize)
+    config.logger.info(str_print)
 
     # Epochs
     best_mAP = -1.
@@ -168,7 +170,7 @@ def main():
               epoch=epoch, config=config)
 
         # Save checkpoint
-        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 2:
+        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 0:
             _, current_mAP = evaluate(test_loader, model, epoch, config=config)
             config.tb_logger.add_scalar('mAP', current_mAP, epoch)
             if current_mAP > best_mAP:

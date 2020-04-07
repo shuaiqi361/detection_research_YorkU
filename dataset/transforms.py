@@ -288,7 +288,7 @@ def photometric_distort(image):
     return new_image
 
 
-def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512)):
+def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512), random_crop_flag=False):
     """
     Apply the transformations above.
 
@@ -326,7 +326,7 @@ def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512)):
         #     new_image, new_boxes = expand(new_image, boxes, filler=mean)
 
         # Randomly crop image (zoom in)
-        if random.random() < 0.5:
+        if random.random() < 0.5 and random_crop_flag:
             new_image, new_boxes, new_labels, new_difficulties = random_crop(new_image, new_boxes, new_labels,
                                                                          new_difficulties)
 

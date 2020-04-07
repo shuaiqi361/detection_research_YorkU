@@ -60,7 +60,7 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         all_images_dict[image_id]['image_path'] = image_path
 
         bbox = annotation['bbox']
-        corner_notation = [int(bbox[0] - bbox[2]/2.) - 1, int(bbox[1] - bbox[3]/2.) - 1,
+        corner_notation = [max(int(bbox[0] - bbox[2]/2.), 0), max(int(bbox[1] - bbox[3]/2.), 0),
                            int(bbox[0] + bbox[2]/2.) - 1, int(bbox[1] + bbox[3]/2.) - 1]
         all_images_dict[image_id]['bbox'].append(corner_notation)
 
@@ -129,8 +129,8 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         all_images_dict[image_id]['image_path'] = image_path
 
         bbox = annotation['bbox']
-        corner_notation = [int(bbox[0] - bbox[2] / 2.) - 1, int(bbox[1] - bbox[3] / 2.) - 1,
-                           int(bbox[0] + bbox[2] / 2.) - 1, int(bbox[1] + bbox[3] / 2.) - 1]
+        corner_notation = [max(int(bbox[0] - bbox[2]/2.), 0), max(int(bbox[1] - bbox[3]/2.), 0),
+                           int(bbox[0] + bbox[2]/2.) - 1, int(bbox[1] + bbox[3]/2.) - 1]
         all_images_dict[image_id]['bbox'].append(corner_notation)
 
         cat_id = annotation['category_id']

@@ -2,7 +2,8 @@ import json
 import os
 import xml.etree.ElementTree as ET
 
-traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus']
+# traffic_labels = ['car', 'van', 'bus', 'pickup', 'truck']
+traffic_labels = ['car', 'van', 'bus']
 traffic_label_map = {k: v + 1 for v, k in enumerate(traffic_labels)}
 traffic_label_map['background'] = 0
 rev_traffic_label_map = {v: k for k, v in traffic_label_map.items()}  # Inverse mapping
@@ -43,8 +44,8 @@ def parse_annotation(annotation_path, image_folder):
             top = float(bbox['top'])
             width = float(bbox['width'])
             height = float(bbox['height'])
-            xmin = int(left)
-            ymin = int(top)
+            xmin = max(int(left), 0)
+            ymin = max(int(top), 0)
             xmax = int(left + width) - 1
             ymax = int(top + height) - 1
 

@@ -47,10 +47,13 @@ def create_data_lists_MIOTCD(root_path, output_folder):
         else:
             continue
 
-        xmin = int(elements[2])
-        ymin = int(elements[3])
-        xmax = int(elements[4])
-        ymax = int(elements[5])
+        xmin = max(int(elements[2]), 0)
+        ymin = max(int(elements[3]), 0)
+        xmax = int(elements[4]) - 1
+        ymax = int(elements[5]) - 1
+        if xmax < xmin + 5 or ymax < ymin + 5:
+            print('Improper image')
+            continue
 
         difficult = 1
 
