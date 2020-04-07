@@ -170,7 +170,7 @@ class TrafficDataset(Dataset):
     Input: list of traffic dataset json files
     """
 
-    def __init__(self, data_folder_list, split, keep_difficult=True, input_size=(512, 512)):
+    def __init__(self, data_folder_list, split, keep_difficult=True, input_size=(512, 512), config=None):
         """
         :param data_folder: folder where data files are stored
         :param split: split, one of 'TRAIN' or 'TEST'

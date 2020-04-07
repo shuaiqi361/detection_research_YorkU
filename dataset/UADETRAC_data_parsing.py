@@ -25,7 +25,7 @@ def parse_annotation(annotation_path, image_folder, down_sample=False):
     image_paths = list()
 
     for object in root.iter('frame'):
-        if random.random() > 0.12 and down_sample:
+        if random.random() > 0.07 and down_sample:
             continue
         boxes = list()
         labels = list()

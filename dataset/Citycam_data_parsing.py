@@ -2,6 +2,7 @@ import json
 import os
 import xml.etree.ElementTree as ET
 import cv2
+import random
 
 traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus']
 traffic_label_map = {k: v + 1 for v, k in enumerate(traffic_labels)}
@@ -151,6 +152,14 @@ def create_data_lists_citycam(root_path, output_folder):
 
             for frame in os.listdir(frame_path):
                 if frame.endswith('.xml'):
+                    if random.random() > 0.2:
+                        continue
+
+                    frame_id = int(frame.strip('.xml'))
+                    image_name = '{:06d}.jpg'.format(frame_id)
+                    if not os.path.exists(os.path.join(frame_path, image_name)):
+                        continue
+
                     objects = parse_annotation(os.path.join(frame_path, frame))
                     if len(objects) == 0:
                         n_skipped += 1
