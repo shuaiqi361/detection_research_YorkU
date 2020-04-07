@@ -57,17 +57,17 @@ def parse_annotation(annotation_path):
         ymin = max(int(bbox.find('ymin').text), 0)
         xmax = int(bbox.find('xmax').text) - 1
         ymax = int(bbox.find('ymax').text) - 1
-        if xmax - xmin < 5 or ymax - ymin < 5:
-            print('Improper annotation:', annotation_path)
+        if xmax - xmin < 3 or ymax - ymin < 3:
+            print('Invalid bbox:', annotation_path)
             return {}
 
         boxes.append([xmin, ymin, xmax, ymax])
         labels.append(uni_label)
         difficulties.append(difficult)
 
-    # if len(boxes) == 0:
-    #     print('Images with no objects: ', annotation_path)
-    #     return {}
+    if len(boxes) == 0:
+        print('Images with no objects: ', annotation_path)
+        return {}
     return {'boxes': boxes, 'labels': labels, 'difficulties': difficulties}
 
 

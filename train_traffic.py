@@ -102,14 +102,14 @@ def main():
 
     # Custom dataloaders
     train_dataset = TrafficDataset(train_data_folder, split='train',
-                                     keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
+                                     keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])), config=config)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config.internal_batchsize, shuffle=True,
                                                collate_fn=train_dataset.collate_fn, num_workers=workers,
                                                pin_memory=True)  # note that we're passing the collate function here
     # Load test data
     test_dataset = TrafficDataset(val_data_folder,
                                     split='val',
-                                    keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])))
+                                    keep_difficult=keep_difficult, input_size=(int(config.model['input_size']), int(config.model['input_size'])), config=config)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.internal_batchsize, shuffle=False,
                                               collate_fn=test_dataset.collate_fn, num_workers=workers, pin_memory=True)
 

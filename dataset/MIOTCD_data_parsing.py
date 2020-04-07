@@ -51,11 +51,11 @@ def create_data_lists_MIOTCD(root_path, output_folder):
         ymin = max(int(elements[3]), 0)
         xmax = int(elements[4]) - 1
         ymax = int(elements[5]) - 1
-        if xmax < xmin + 5 or ymax < ymin + 5:
+        if xmax < xmin + 3 or ymax < ymin + 3:
             print('Improper image')
             continue
 
-        difficult = 1
+        difficult = 0
 
         if image_id not in all_images_dict.keys():
             all_images_dict[image_id] = {'labels': [label],

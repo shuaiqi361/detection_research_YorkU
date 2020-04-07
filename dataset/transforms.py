@@ -288,7 +288,7 @@ def photometric_distort(image):
     return new_image
 
 
-def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512), random_crop_flag=False):
+def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512), random_crop_flag=True):
     """
     Apply the transformations above.
 

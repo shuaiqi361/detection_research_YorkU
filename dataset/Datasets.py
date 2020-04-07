@@ -92,7 +92,7 @@ class COCO17Dataset(Dataset):
     A PyTorch Dataset class to be used in a PyTorch DataLoader to create batches.
     """
 
-    def __init__(self, data_folder, split, keep_difficult=True, input_size=(512, 512)):
+    def __init__(self, data_folder, split, keep_difficult=True, input_size=(512, 512), config=None):
         """
         :param data_folder: folder where data files are stored
         :param split: split, one of 'TRAIN' or 'TEST'
@@ -103,6 +103,10 @@ class COCO17Dataset(Dataset):
         assert self.split in {'TRAIN', 'TEST', 'VAL'}
         self.keep_difficult = keep_difficult
         self.data_folder = data_folder
+        if config is None:
+            self.random_crop_flag = True
+        else:
+            self.random_crop_flag = config.random_crop_flag
 
         # Read data files
         with open(os.path.join(data_folder, self.split + '_images.json'), 'r') as j:
@@ -125,8 +129,7 @@ class COCO17Dataset(Dataset):
         difficulties = torch.ByteTensor(objects['difficulties'])  # (n_objects)
 
         # Apply transformations
-        image, boxes, labels, difficulties = transform(image, boxes, labels, difficulties, split=self.split)
-
+        image, boxes, labels, difficulties = transform(image, boxes, labels, difficulties, split=self.split, random_crop_flag=self.random_crop_flag)
         return image, boxes, labels, difficulties
 
     def __len__(self):

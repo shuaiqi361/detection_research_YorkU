@@ -50,20 +50,24 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         if annotation['iscrowd'] == 1:
             continue
 
+        bbox = annotation['bbox']
+        if bbox[2] < 3 or bbox[3] < 3:
+            print('Eliminate small objects for training < 3px.')
+            continue
+
         image_id = annotation['image_id']
         if image_id not in all_images_dict.keys():
             all_images_dict[image_id] = {'image_path': '', 'bbox': [], 'labels': [],
                                          'cat_names': [], 'difficulties': []}
 
+
+        corner_notation = [int(bbox[0]), int(bbox[1]),
+                           int(bbox[0] + bbox[2]) - 1, int(bbox[1] + bbox[3]) - 1]
+        all_images_dict[image_id]['bbox'].append(corner_notation)
+
         img = coco.loadImgs(image_id)[0]
         image_path = '%s/%s/%s' % (image_folder, dataType, img['file_name'])
         all_images_dict[image_id]['image_path'] = image_path
-
-        bbox = annotation['bbox']
-        corner_notation = [max(int(bbox[0] - bbox[2]/2.), 0), max(int(bbox[1] - bbox[3]/2.), 0),
-                           int(bbox[0] + bbox[2]/2.) - 1, int(bbox[1] + bbox[3]/2.) - 1]
-        all_images_dict[image_id]['bbox'].append(corner_notation)
-
         cat_id = annotation['category_id']
         cat_name = coco.loadCats([cat_id])[0]['name']
         all_images_dict[image_id]['cat_names'].append(cat_name)
@@ -120,6 +124,11 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         if annotation['iscrowd'] == 1:
             continue
 
+        bbox = annotation['bbox']
+        if bbox[2] < 1 or bbox[3] < 1:
+            print('Eliminate small objects for testing < 1px.')
+            continue
+
         image_id = annotation['image_id']
         if image_id not in all_images_dict.keys():
             all_images_dict[image_id] = {'image_path': '', 'bbox': [], 'labels': [], 'cat_names': [], 'difficulties': []}
@@ -128,9 +137,8 @@ def create_data_lists_coco17(coco_root_path, output_folder):
         image_path = '%s/%s/%s' % (image_folder, dataType, img['file_name'])
         all_images_dict[image_id]['image_path'] = image_path
 
-        bbox = annotation['bbox']
-        corner_notation = [max(int(bbox[0] - bbox[2]/2.), 0), max(int(bbox[1] - bbox[3]/2.), 0),
-                           int(bbox[0] + bbox[2]/2.) - 1, int(bbox[1] + bbox[3]/2.) - 1]
+        corner_notation = [int(bbox[0]), int(bbox[1]),
+                           int(bbox[0] + bbox[2]) - 1, int(bbox[1] + bbox[3]) - 1]
         all_images_dict[image_id]['bbox'].append(corner_notation)
 
         cat_id = annotation['category_id']
@@ -148,7 +156,7 @@ def create_data_lists_coco17(coco_root_path, output_folder):
 
     for img_id, annots in all_images_dict.items():
         test_images.append(annots['image_path'])
-        objects_coco = {'bbox': annots['bbox'], 'labels': annots['labels'], 'cat_names': annots['cat_names']}
+        objects_coco = {'bbox': annots['bbox'], 'labels': annots['labels'], 'difficulties': annots['difficulties']}
         test_objects.append(objects_coco)
 
     # print('Total validation images: ', len(test_images))

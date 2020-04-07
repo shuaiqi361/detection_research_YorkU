@@ -13,6 +13,7 @@ from tensorboardX import SummaryWriter
 import argparse
 from easydict import EasyDict
 import json
+import math
 
 from scheduler import adjust_learning_rate
 from models import model_entry
