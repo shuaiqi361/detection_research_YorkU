@@ -500,7 +500,7 @@ class SSD512(nn.Module):
             for c in range(1, self.n_classes):
                 # Keep only predicted boxes and scores where scores for this class are above the minimum score
                 class_scores = predicted_scores[i][:, c]  # (22536)
-                score_above_min_score = (class_scores > min_score) * 1  # torch.uint8 (byte) tensor, for indexing
+                score_above_min_score = (class_scores > min_score).long()  # torch.uint8 (byte) tensor, for indexing
                 # print(score_above_min_score.size(), score_above_min_score[:10])
                 n_above_min_score = torch.sum(score_above_min_score).item()
 
@@ -534,7 +534,7 @@ class SSD512(nn.Module):
 
                     # Suppress boxes whose overlaps (with this box) are greater than maximum overlap
                     # Find such boxes and update suppress indices
-                    suppress = torch.max(suppress, (overlap[box] > max_overlap) * 1)
+                    suppress = torch.max(suppress, (overlap[box] > max_overlap).long())
                     # The max operation retains previously suppressed boxes, like an 'OR' operation
 
                     # Don't suppress this box, even though it has an overlap of 1 with itself

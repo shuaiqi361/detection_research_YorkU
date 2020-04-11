@@ -5,8 +5,6 @@ from math import sqrt
 import torchvision
 from dataset.transforms import *
 
-# device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-
 
 class VGGBase(nn.Module):
     """
@@ -95,6 +93,7 @@ class VGGBase(nn.Module):
         However, the original VGG-16 does not contain the conv6 and con7 layers.
         Therefore, we convert fc6 and fc7 into convolutional layers, and subsample by decimation. See 'decimate' in utils.py.
         """
+
         # Current state of base
         state_dict = self.state_dict()
         param_names = list(state_dict.keys())
@@ -498,7 +497,7 @@ class SSD512(nn.Module):
             for c in range(1, self.n_classes):
                 # Keep only predicted boxes and scores where scores for this class are above the minimum score
                 class_scores = predicted_scores[i][:, c]  # (22536)
-                score_above_min_score = (class_scores > min_score) * 1  # torch.uint8 (byte) tensor, for indexing
+                score_above_min_score = (class_scores > min_score).long()  # torch.uint8 (byte) tensor, for indexing
                 # print(score_above_min_score.size(), score_above_min_score[:10])
                 n_above_min_score = torch.sum(score_above_min_score).item()
 
@@ -532,7 +531,7 @@ class SSD512(nn.Module):
 
                     # Suppress boxes whose overlaps (with this box) are greater than maximum overlap
                     # Find such boxes and update suppress indices
-                    suppress = torch.max(suppress, (overlap[box] > max_overlap) * 1)
+                    suppress = torch.max(suppress, (overlap[box] > max_overlap).long())
                     # The max operation retains previously suppressed boxes, like an 'OR' operation
 
                     # Don't suppress this box, even though it has an overlap of 1 with itself
