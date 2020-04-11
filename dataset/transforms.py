@@ -322,11 +322,11 @@ def transform(image, boxes, labels, difficulties, split, resize_dim=(512, 512), 
 
         # Expand image (zoom out) with a 50% chance - helpful for training detection of small objects
         # Fill surrounding space with the mean of ImageNet data that our base VGG was trained on
-        # if random.random() < 0.5 and len(boxes) != 0:
-        #     new_image, new_boxes = expand(new_image, boxes, filler=mean)
+        if random.random() < 0.5:
+            new_image, new_boxes = expand(new_image, boxes, filler=mean)
 
         # Randomly crop image (zoom in)
-        if random.random() <= 0.5 and random_crop_flag:
+        if random.random() <= 0.25 and random_crop_flag:
             new_image, new_boxes, new_labels, new_difficulties = random_crop(new_image, new_boxes, new_labels,
                                                                          new_difficulties)
 
