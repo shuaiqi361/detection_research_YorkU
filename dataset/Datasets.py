@@ -181,7 +181,7 @@ class TrafficDataset(Dataset):
         assert self.split in {'TRAIN', 'TEST', 'VAL'}
         self.keep_difficult = keep_difficult
         self.data_folder_list = data_folder_list.split(' ')
-
+        self.input_size = input_size
         self.images = list()
         self.objects = list()
 
@@ -215,7 +215,7 @@ class TrafficDataset(Dataset):
         difficulties = torch.ByteTensor(objects['difficulties'])  # (n_objects)
 
         # Apply transformations
-        image, boxes, labels, difficulties = transform(image, boxes, labels, difficulties, split=self.split)
+        image, boxes, labels, difficulties = transform(image, boxes, labels, difficulties, split=self.split, resize_dim=self.input_size)
 
         return image, boxes, labels, difficulties
 

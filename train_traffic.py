@@ -172,7 +172,7 @@ def main():
               epoch=epoch, config=config)
 
         # Save checkpoint
-        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 5:
+        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 1:
             _, current_mAP = evaluate(test_loader, model, epoch, config=config)
             config.tb_logger.add_scalar('mAP', current_mAP, epoch)
             if current_mAP > best_mAP:

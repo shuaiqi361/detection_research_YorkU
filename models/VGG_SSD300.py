@@ -327,7 +327,7 @@ class SSD300(nn.Module):
     The SSD300 network - encapsulates the base VGG network, auxiliary, and prediction convolutions.
     """
 
-    def __init__(self, n_classes, device='cuda:1'):
+    def __init__(self, n_classes, device):
         super(SSD300, self).__init__()
         self.device = device
         self.n_classes = n_classes
@@ -587,6 +587,7 @@ class MultiBoxLoss300(nn.Module):
         n_priors = self.priors_cxcy.size(0)
         n_classes = predicted_scores.size(2)
 
+        # print(n_priors, predicted_locs.size(), predicted_scores.size())
         assert n_priors == predicted_locs.size(1) == predicted_scores.size(1)
 
         decoded_locs = torch.zeros((batch_size, n_priors, 4), dtype=torch.float).to(self.device)  # (N, 22536, 4)

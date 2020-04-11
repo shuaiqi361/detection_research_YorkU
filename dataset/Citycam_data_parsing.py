@@ -152,7 +152,7 @@ def create_data_lists_citycam(root_path, output_folder):
 
             for frame in os.listdir(frame_path):
                 if frame.endswith('.xml'):
-                    if random.random() > 0.2:
+                    if random.random() > 0.25:
                         continue
 
                     frame_id = int(frame.strip('.xml'))
