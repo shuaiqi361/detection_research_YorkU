@@ -4,6 +4,7 @@ checkpoints/*
 *.tar
 .idea/*
 __pycache__/*
+operators/__pycache__/*
 pycocotools/*
 dataset/COCO/*
 dataset/VOC/*
