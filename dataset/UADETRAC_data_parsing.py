@@ -3,8 +3,8 @@ import os
 import xml.etree.ElementTree as ET
 import random
 
-traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus']
-# traffic_labels = ['car', 'van', 'bus']
+# traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus']
+traffic_labels = ['car', 'van', 'bus']
 traffic_label_map = {k: v + 1 for v, k in enumerate(traffic_labels)}
 traffic_label_map['background'] = 0
 rev_traffic_label_map = {v: k for k, v in traffic_label_map.items()}  # Inverse mapping
@@ -25,7 +25,7 @@ def parse_annotation(annotation_path, image_folder, down_sample=False):
     image_paths = list()
 
     for object in root.iter('frame'):
-        if random.random() > 0.07 and down_sample:
+        if random.random() > 0.09 and down_sample:
             continue
         boxes = list()
         labels = list()

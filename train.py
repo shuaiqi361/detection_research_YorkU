@@ -47,7 +47,6 @@ def main():
     if not os.path.exists(config.event_path):
         os.mkdir(config.event_path)
 
-
     batch_size = config.batch_size
     config.num_iter_flag = batch_size // config.internal_batchsize
     with open(config.label_path, 'r') as j:
@@ -64,7 +63,10 @@ def main():
     decay_lr_to = config.optimizer['decay_lr']
     momentum = config.optimizer['momentum']
     weight_decay = config.optimizer['weight_decay']
-    config.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    if config.device == 1:
+        config.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    else:
+        config.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     train_data_folder = config.train_data_root
     val_data_folder = config.val_data_root
@@ -171,7 +173,7 @@ def main():
               epoch=epoch, config=config)
 
         # Save checkpoint
-        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 0:
+        if epoch >= val_freq and epoch % val_freq == 0 or epoch == 5:
             _, current_mAP = evaluate(test_loader, model, epoch, config=config)
             config.tb_logger.add_scalar('mAP', current_mAP, epoch)
             if current_mAP > best_mAP:
@@ -217,14 +219,11 @@ def train(train_loader, model, criterion, optimizer, epoch, config):
         boxes = [b.to(config.device) for b in boxes]
         labels = [l.to(config.device) for l in labels]
 
-        if config.model['arch'].upper() == 'VGG_SSD' or config.model['arch'].upper() == 'VGG_SSD2':
-            # Forward prop.
-            predicted_locs, predicted_scores = model(images)
+        # Forward prop.
+        predicted_locs, predicted_scores = model(images)
 
-            # Loss
-            loss = criterion(predicted_locs, predicted_scores, boxes, labels) / config.num_iter_flag
-        else:
-            raise NotImplementedError
+        # Loss
+        loss = criterion(predicted_locs, predicted_scores, boxes, labels) / config.num_iter_flag
 
         # Backward prop.
         if i % config.num_iter_flag == 0 and i != 0:
@@ -286,9 +285,7 @@ def evaluate(test_loader, model, epoch, config):
 
             # Forward prop.
             time_start = time.time()
-            if config.model['arch'].upper() == 'VGG_SSD' or config.model['arch'].upper() == 'VGG_SSD2':
-                predicted_locs, predicted_scores = model(images)
-            time_end = time.time()
+            predicted_locs, predicted_scores = model(images)
 
             # Detect objects in SSD output
             det_boxes_batch, det_labels_batch, det_scores_batch = \
@@ -298,6 +295,7 @@ def evaluate(test_loader, model, epoch, config):
                                      max_overlap=0.45,
                                      top_k=200)
 
+            time_end = time.time()
             # Evaluation MUST be at min_score=0.01, max_overlap=0.45, top_k=200
             # for fair comparision with the paper's results and other repos
 
