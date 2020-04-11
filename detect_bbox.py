@@ -64,17 +64,15 @@ def detect_video(video_path, model_path, data_set, meta_data_path, output_path):
             print('Image rendering done. ')
             break
 
-        annotated_image, time_pframe = detect_image(frame, model, 0.2, 0.45, 200, rev_traffic_label_map, label_color_map)
+        annotated_image, time_pframe = detect_image(frame, model, 0.2, 0.5, 200, rev_traffic_label_map, label_color_map)
         speed_list.append(time_pframe)
-
-        # cv2.imshow('frames', annotated_image)
-        # cv2.waitKey()
 
         video_out.write(annotated_image)
 
     cap_video.release()
     print('Average speed: {} fps.'.format(1. / np.mean(speed_list)))
     print('Saved to:', os.path.join(output_path, video_path.split('/')[-1]))
+    print('Video configuration: \nresolution:{}x{}, fps:{}'.format(width, height, fps))
 
 
 def detect_image(frame, model, min_score, max_overlap, top_k, reverse_label_map, label_color_map):
@@ -120,7 +118,7 @@ def detect_image(frame, model, min_score, max_overlap, top_k, reverse_label_map,
 
         cv2.rectangle(annotated_image, pt1=(int(box_location[0]), int(box_location[1])),
                       pt2=(int(box_location[2]), int(box_location[3])),
-                      color=hex_to_rgb(label_color_map[det_labels[i]]), thickness=1)
+                      color=hex_to_rgb(label_color_map[det_labels[i]]), thickness=2)
 
         # Text
         text = det_labels[i].upper()
@@ -129,7 +127,7 @@ def detect_image(frame, model, min_score, max_overlap, top_k, reverse_label_map,
                          box_location[1] + 1 + label_size[0][1]]
         cv2.rectangle(annotated_image, pt1=(int(text_location[0]), int(text_location[1])),
                       pt2=(int(text_location[2]), int(text_location[3])),
-                      color=hex_to_rgb(label_color_map[det_labels[i]]), thickness=-1)
+                      color=(128, 128, 128), thickness=-1)
         cv2.putText(annotated_image, text, org=(int(text_location[0]), int(text_location[3])),
                     fontFace=cv2.FONT_HERSHEY_COMPLEX, thickness=1, fontScale=0.4, color=(255, 255, 255))
 
@@ -150,9 +148,10 @@ if __name__ == '__main__':
         print_help()
         exit()
     if sys.argv[1] == '--video':
-        video_path = '/media/keyi/Data/Research/traffic/data/Hwy7/20200224_153147_9FD8.mkv'
-        model_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment/SSD512_traffic_001/snapshots/checkpoint_epoch-10.pth.tar'
+        root_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment'
+        video_path = '/media/keyi/Data/Research/traffic/data/Hwy7/20200224_153147_demo4.mkv'
+        model_path = os.path.join(root_path, 'SSD512_traffic_001/snapshots/checkpoint_epoch-10.pth.tar')
         data_set = 'traffic'
         meta_data_path = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/Citycam/label_map.json'
-        output_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment/SSD512_traffic_001/live_results'
+        output_path = os.path.join(root_path, 'SSD512_traffic_001/live_results')
         detect_video(video_path, model_path, data_set, meta_data_path, output_path)

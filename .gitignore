@@ -3,6 +3,7 @@ log/*
 checkpoints/*
 *.tar
 .idea/*
+operators/__pycache__/*
 __pycache__/*
 pycocotools/*
 dataset/COCO/*
