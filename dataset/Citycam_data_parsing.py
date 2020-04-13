@@ -3,8 +3,9 @@ import os
 import xml.etree.ElementTree as ET
 import cv2
 import random
+import numpy as np
 
-traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus']
+traffic_labels = ['car', 'pickup', 'truck', 'van', 'bus', 'other']
 traffic_label_map = {k: v + 1 for v, k in enumerate(traffic_labels)}
 traffic_label_map['background'] = 0
 rev_traffic_label_map = {v: k for k, v in traffic_label_map.items()}  # Inverse mapping
@@ -13,7 +14,7 @@ citycam_label_map = {1: {'name': 'taxi', 'uni_name': 'car'}, 2: {'name': 'black_
     , 3: {'name': 'other_cars', 'uni_name': 'car'}, 4: {'name': 'little_truck', 'uni_name': 'pickup'}
     , 5: {'name': 'middle_truck', 'uni_name': 'truck'}, 6: {'name': 'big_truck', 'uni_name': 'truck'}
     , 7: {'name': 'van', 'uni_name': 'van'}, 8: {'name': 'middle_bus', 'uni_name': 'bus'}
-    , 9: {'name': 'big_bus', 'uni_name': 'bus'}}
+    , 9: {'name': 'big_bus', 'uni_name': 'bus'}, 10:{'name': 'other', 'uni_name': 'other'}}
 
 citycam_scene_type = ['Downtown', 'Parkway']
 
@@ -43,10 +44,11 @@ def parse_annotation(annotation_path):
 
     for object in root.iter('vehicle'):
 
-        difficult = 1
+        difficult = 0
 
         label = int(object.find('type').text)
         if label not in citycam_label_map.keys():
+            print(label, ' not in citycam label maps')
             continue
 
         uni_name = citycam_label_map[label]['uni_name']
@@ -58,7 +60,7 @@ def parse_annotation(annotation_path):
         ymin = max(int(bbox.find('ymin').text), 0)
         xmax = int(bbox.find('xmax').text) - 1
         ymax = int(bbox.find('ymax').text) - 1
-        if xmax - xmin < 3 or ymax - ymin < 3:
+        if xmax - xmin < 2 or ymax - ymin < 2:
             print('Invalid bbox:', annotation_path)
             return {}
 
@@ -85,6 +87,7 @@ def create_data_lists_citycam(root_path, output_folder):
     n_object = 0
 
     dataType = 'Train'
+    list_counts_train = [0, 0, 0, 0, 0, 0, 0]
     for scene_type in citycam_scene_type:
 
         annFile = '{}/{}_{}.txt'.format(annotation_path, scene_type, dataType)
@@ -108,7 +111,7 @@ def create_data_lists_citycam(root_path, output_folder):
                         n_skipped += 1
                         continue
                     else:
-                        n_object += len(objects)
+                        n_object += len(objects['labels'])
 
                     frame_id = int(frame.strip('.xml'))
                     image_name = '{:06d}.jpg'.format(frame_id)
@@ -116,6 +119,9 @@ def create_data_lists_citycam(root_path, output_folder):
                         continue
                     train_objects.append(objects)
                     train_images.append(os.path.join(frame_path, image_name))
+                    for c in range(len(traffic_labels)):
+                        list_counts_train[c + 1] += objects['labels'].count(c + 1)
+
 
     assert len(train_objects) == len(train_images)
     # Save to file
@@ -135,6 +141,7 @@ def create_data_lists_citycam(root_path, output_folder):
     n_object = 0
 
     dataType = 'Test'
+    list_counts_test = [0, 0, 0, 0, 0, 0, 0]
     for scene_type in citycam_scene_type:
 
         annFile = '{}/{}_{}.txt'.format(annotation_path, scene_type, dataType)
@@ -164,11 +171,15 @@ def create_data_lists_citycam(root_path, output_folder):
                     if len(objects) == 0:
                         n_skipped += 1
                         continue
-                    else:
-                        n_object += len(objects)
 
+                    if len(objects['labels']) == np.sum(objects['labels']):
+                        print('Skipped due to all cars', image_name)
+                        continue  # skip images with all cars
                     test_objects.append(objects)
                     test_images.append(os.path.join(frame_path, frame).strip('.xml') + '.jpg')
+                    n_object += len(objects['labels'])
+                    for c in range(len(traffic_labels)):
+                        list_counts_test[c + 1] += objects['labels'].count(c + 1)
 
     assert len(test_objects) == len(test_images)
     # Save to file
@@ -180,6 +191,7 @@ def create_data_lists_citycam(root_path, output_folder):
     print('\nThere are %d validation images containing a total of %d objects. Files have been saved to %s.' % (
         len(test_images), n_object, os.path.abspath(output_folder)))
     print('Total skipped file:', n_skipped, 'due to weather section in xml has & symbol.')
+    print(list_counts_train, list_counts_test)
 
 
 if __name__ == '__main__':
