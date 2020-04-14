@@ -11,7 +11,9 @@ import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Transforms
-resize = transforms.Resize((512, 512))
+# resize = transforms.Resize((512, 512))
+resize = transforms.Resize((300, 300))
+# resize_dum = transforms.Resize((200, 200))
 to_tensor = transforms.ToTensor()
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
@@ -27,13 +29,64 @@ def hex_to_rgb(value):
     return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
 
-def detect_video(video_path, model_path, data_set, meta_data_path, output_path):
+def detect_folder(folder_path, model_path, data_set, meta_data_path, output_path):
     # load model
-    checkpoint = torch.load(model_path)
+    checkpoint = torch.load(model_path, map_location=device)
     start_epoch = checkpoint['epoch'] + 1
     print(model_path)
     print('Loading checkpoint from epoch %d.\n' % start_epoch)
     model = checkpoint['model']
+    model.device = device
+    model = model.to(device)
+    model.eval()
+
+    with open(meta_data_path, 'r') as j:
+        traffic_label_map = json.load(j)
+    rev_traffic_label_map = {v: k for k, v in traffic_label_map.items()}
+    label_color_map = {k: distinct_colors[i] for i, k in enumerate(traffic_label_map.keys())}
+
+    # load video
+    if not os.path.exists(folder_path):
+        print('video path incorrect.')
+        exit()
+
+    width = 960
+    height = 540
+    fps = 30
+
+    video_out = cv2.VideoWriter(os.path.join(output_path, 'GTA_4.mkv'),
+                                cv2.VideoWriter_fourcc('D', 'I', 'V', 'X'), fps, (width, height))
+
+    speed_list = list()
+    frame_list = os.listdir(folder_path)
+    n_frames = len(frame_list)
+    for frame_id in range(n_frames):
+        frame_name = '{:06d}.png'.format(frame_id)
+        frame_path = os.path.join(folder_path, frame_name)
+        print("Processing frame: ", frame_id, frame_path)
+        frame = cv2.resize(cv2.imread(frame_path), dsize=(width, height))
+
+        annotated_image, time_pframe = detect_image(frame, model, 0.2, 0.3, 200, rev_traffic_label_map, label_color_map)
+        speed_list.append(time_pframe)
+
+        video_out.write(annotated_image)
+        cv2.imshow('frame detect', annotated_image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    print('Average speed: {} fps.'.format(1. / np.mean(speed_list)))
+    print('Saved to:', output_path)
+    print('Video configuration: \nresolution:{}x{}, fps:{}'.format(width, height, fps))
+
+
+def detect_video(video_path, model_path, data_set, meta_data_path, output_path):
+    # load model
+    checkpoint = torch.load(model_path, map_location=device)
+    start_epoch = checkpoint['epoch'] + 1
+    print(model_path)
+    print('Loading checkpoint from epoch %d.\n' % start_epoch)
+    model = checkpoint['model']
+    model.device = device
     model = model.to(device)
     model.eval()
 
@@ -64,10 +117,13 @@ def detect_video(video_path, model_path, data_set, meta_data_path, output_path):
             print('Image rendering done. ')
             break
 
-        annotated_image, time_pframe = detect_image(frame, model, 0.2, 0.5, 200, rev_traffic_label_map, label_color_map)
+        annotated_image, time_pframe = detect_image(frame, model, 0.15, 0.3, 200, rev_traffic_label_map, label_color_map)
         speed_list.append(time_pframe)
 
         video_out.write(annotated_image)
+        cv2.imshow('frame detect', annotated_image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     cap_video.release()
     print('Average speed: {} fps.'.format(1. / np.mean(speed_list)))
@@ -148,10 +204,34 @@ if __name__ == '__main__':
         print_help()
         exit()
     if sys.argv[1] == '--video':
+        # root_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment'
+        # video_path = '/media/keyi/Data/Research/traffic/data/Hwy7/20200224_153147_demo4.mkv'
+        # model_path = os.path.join(root_path, 'SSD512_traffic_002/snapshots/checkpoint_epoch-20.pth.tar')
+        # data_set = 'traffic'
+        # meta_data_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/dataset/DETRAC/label_map.json'
+        # output_path = os.path.join(root_path, 'SSD512_traffic_002/live_results')
+        # detect_video(video_path, model_path, data_set, meta_data_path, output_path)
+
         root_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment'
         video_path = '/media/keyi/Data/Research/traffic/data/Hwy7/20200224_153147_demo4.mkv'
-        model_path = os.path.join(root_path, 'SSD512_traffic_001/snapshots/checkpoint_epoch-10.pth.tar')
+        model_path = os.path.join(root_path, 'SSD300_traffic_001/snapshots/checkpoint_epoch-60.pth.tar')
         data_set = 'traffic'
-        meta_data_path = '/media/keyi/Data/Research/course_project/AdvancedCV_2020/AdvanceCV_project/data/Citycam/label_map.json'
-        output_path = os.path.join(root_path, 'SSD512_traffic_001/live_results')
+        meta_data_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/dataset/Citycam/label_map.json'
+        output_path = os.path.join(root_path, 'SSD300_traffic_001/live_results/Hwy7')
         detect_video(video_path, model_path, data_set, meta_data_path, output_path)
+    elif sys.argv[1] == '--folder':
+        # root_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment'
+        # folder_path = '/media/keyi/Data/Research/traffic/synthetic_data/GTA_itstraffic/object/image_2'
+        # model_path = os.path.join(root_path, 'SSD512_traffic_002/snapshots/checkpoint_epoch-20.pth.tar')
+        # data_set = 'traffic'
+        # meta_data_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/dataset/DETRAC/label_map.json'
+        # output_path = os.path.join(root_path, 'SSD512_traffic_002/live_results/GTA')
+        # detect_folder(folder_path, model_path, data_set, meta_data_path, output_path)
+
+        root_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/experiment'
+        folder_path = '/media/keyi/Data/Research/traffic/synthetic_data/GTA_itstraffic/object/image_2'
+        model_path = os.path.join(root_path, 'SSD300_traffic_001/snapshots/checkpoint_epoch-60.pth.tar')
+        data_set = 'traffic'
+        meta_data_path = '/media/keyi/Data/Research/traffic/detection/object_detection_2D/dataset/Citycam/label_map.json'
+        output_path = os.path.join(root_path, 'SSD300_traffic_001/live_results/GTA')
+        detect_folder(folder_path, model_path, data_set, meta_data_path, output_path)

@@ -342,7 +342,7 @@ class SSD512(nn.Module):
     The SSD300 network - encapsulates the base VGG network, auxiliary, and prediction convolutions.
     """
 
-    def __init__(self, n_classes, device='cuda:1'):
+    def __init__(self, n_classes, device='cuda:0'):
         super(SSD512, self).__init__()
         self.device = device
         self.n_classes = n_classes
@@ -580,7 +580,7 @@ class MultiBoxLoss(nn.Module):
     (2) a confidence loss for the predicted class scores.
     """
 
-    def __init__(self, priors_cxcy, threshold=0.5, neg_pos_ratio=3, alpha=1., device='cuda:1'):
+    def __init__(self, priors_cxcy, threshold=0.5, neg_pos_ratio=3, alpha=1., device='cuda:0'):
         super(MultiBoxLoss, self).__init__()
         self.priors_cxcy = priors_cxcy
         self.priors_xy = cxcy_to_xy(priors_cxcy)
